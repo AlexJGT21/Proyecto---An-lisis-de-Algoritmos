@@ -13,8 +13,10 @@ public class Laberinto {
     
     private int filas;
     private int columnas;
+    private Casilla CInicio;
+    private Casilla CFinal;
     
-    private int[][] matriz;
+    private Casilla[][] matriz;
     
     private Random random = new Random();
     
@@ -25,7 +27,7 @@ public class Laberinto {
         this.filas = 13;
         this.columnas = 23;
         
-        matriz = obtenerLaberinto();
+        matriz = setearLaberinto();
     }
     
     /**
@@ -37,14 +39,14 @@ public class Laberinto {
         this.filas = filas;
         this.columnas = columnas;
         
-        matriz = obtenerLaberinto();
+        matriz = setearLaberinto();
     }
     
     public void setDimensiones(int filas, int columnas) {
         this.filas = filas;
         this.columnas = columnas;
         
-        matriz = obtenerLaberinto();
+        matriz = setearLaberinto();
     }
     
     public int getAnchoBloque(int anchoPanel) {
@@ -55,9 +57,32 @@ public class Laberinto {
         return (columnas > 0)? altoPanel / filas: 40;
     }
     
+    public Casilla[][] getLaberinto(){
+        return matriz;
+    }
+
+    public Casilla getCInicio() {
+        return CInicio;
+    }
+
+    public void setCInicio(Casilla CInicio) {
+        this.CInicio = CInicio;
+    }
+
+    public Casilla getCFinal() {
+        return CFinal;
+    }
+
+    public void setCFinal(Casilla CFinal) {
+        this.CFinal = CFinal;
+    }
+    
+    
+    
+    
     
     public void paint(Graphics grafico, int anchoPalen, int altoPanel) {
-        int[][] laberinto = matriz;
+        Casilla[][] laberinto = matriz;
         
         if (filas <= 0 || columnas <= 0) {
             return;
@@ -68,22 +93,63 @@ public class Laberinto {
         
         for (int fila = 0; fila < filas; fila++) {
             for (int columna = 0; columna < columnas; columna++) {
-                if (laberinto[fila][columna] == 1) {
-                    grafico.setColor(Color.BLUE);
+                //pasillo
+                if (laberinto[fila][columna].getRol() == 0) {
+                    grafico.setColor(Color.WHITE);
+                    grafico.fillRect(columna * anchoBloque, fila * altoBloque, anchoBloque, altoBloque);
+                    
+                    grafico.setColor(Color.WHITE);
+                    grafico.drawRect(columna * anchoBloque, fila * altoBloque, anchoBloque, altoBloque);  
+                    laberinto[fila][columna].setX(columna);
+                    laberinto[fila][columna].setY(fila);
+                }
+                
+                //color paredes
+                if (laberinto[fila][columna].getRol() == 1) {
+                    grafico.setColor(Color.BLACK);
                     grafico.fillRect(columna * anchoBloque, fila * altoBloque, anchoBloque, altoBloque);
                     
                     grafico.setColor(Color.black);
-                    grafico.drawRect(columna * anchoBloque, fila * altoBloque, anchoBloque, altoBloque);                    
+                    grafico.drawRect(columna * anchoBloque, fila * altoBloque, anchoBloque, altoBloque); 
+//                    laberinto[fila][columna] = null;
+                }
+                
+                //color entrada
+                if (laberinto[fila][columna].getRol() == 2) {
+                    grafico.setColor(Color.CYAN);
+                    grafico.fillRect(columna * anchoBloque, fila * altoBloque, anchoBloque, altoBloque);
+                    
+                    grafico.setColor(Color.CYAN);
+                    grafico.drawRect(columna * anchoBloque, fila * altoBloque, anchoBloque, altoBloque); 
+                    
+                    laberinto[fila][columna].setX(columna);
+                    laberinto[fila][columna].setY(fila);
+                    
+                    CInicio = laberinto[fila][columna];
+                }
+                
+                //color salida
+                if (laberinto[fila][columna].getRol() == 3) {
+                    grafico.setColor(Color.CYAN);
+                    grafico.fillRect(columna * anchoBloque, fila * altoBloque, anchoBloque, altoBloque);
+                    
+                    grafico.setColor(Color.CYAN);
+                    grafico.drawRect(columna * anchoBloque, fila * altoBloque, anchoBloque, altoBloque);    
+                    
+                    laberinto[fila][columna].setX(columna);
+                    laberinto[fila][columna].setY(fila);
+                    
+                    CFinal = laberinto[fila][columna];
                 }
             }            
         }
     }
     
     
-    private int[][] obtenerLaberinto() {
+    private Casilla[][] setearLaberinto() {
         
         //Obtenemos las filas y columnas y creamos un laberinto
-        int[][] laberinto = new int[filas][columnas];
+        Casilla[][] laberinto = new Casilla[filas][columnas];
         
         //Pasamos a rellenar de manera aleatoria con 0 y 1
         //1 es un muro
@@ -91,9 +157,12 @@ public class Laberinto {
         
         for (int i = 0; i < laberinto.length; i++) {
             for (int j = 0; j < laberinto[i].length; j++) {
-                laberinto[i][j] = random.nextInt(2);
+                laberinto[i][j] = new Casilla();
+                laberinto[i][j].setRol(random.nextInt(2));
             }
         }
+        
+        laberinto = entradaSalida(laberinto);
         /*
         int[][] laberinto = {
                 {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
@@ -132,5 +201,15 @@ public class Laberinto {
         return laberinto;
     }
     
+    private Casilla[][] entradaSalida(Casilla[][] laberinto){
+        int entrada = random.nextInt(filas);
+        int salida= random.nextInt(filas);
+        laberinto[entrada][0] = new Casilla();
+        laberinto[salida][columnas-1] = new Casilla();
+        laberinto[entrada][0].setRol(2);
+        laberinto[salida][columnas-1].setRol(3);
+        
+        return laberinto;
+    }
     
 }

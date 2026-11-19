@@ -13,7 +13,6 @@ import javax.swing.JOptionPane;
 public class Juego extends javax.swing.JFrame {
 
     Laberinto laberinto = new Laberinto();
-    Personaje personaje = new Personaje();        
     
     public Juego() {
         initComponents();
@@ -36,7 +35,7 @@ public class Juego extends javax.swing.JFrame {
 
         JFondo = new javax.swing.JPanel();
         jLabel3 = new javax.swing.JLabel();
-        jLaberinto = new PanelLaberinto(laberinto, personaje);
+        jLaberinto = new PanelLaberinto(laberinto);
         jPanel1 = new javax.swing.JPanel();
         btnConfirmar = new javax.swing.JButton();
         jTFilas = new javax.swing.JTextField();
@@ -157,14 +156,17 @@ public class Juego extends javax.swing.JFrame {
         try {
             int numeroFilas = Integer.parseInt(filas);
             int numeroColumnas = Integer.parseInt(columnas);
-            
+            if(numeroFilas <= 0 || numeroColumnas <= 0){
+                JOptionPane.showMessageDialog(null, "Las filas y columnas ingresados deben ser numeros enteros positivos.", "ERROR DE DATOS", JOptionPane.ERROR_MESSAGE);
+             throw new IllegalArgumentException("numeros negativos");
+            }
             //Pasamos los datos de filas y columnas ingresadas por el usuario
             laberinto.setDimensiones(numeroFilas, numeroColumnas);
             jLaberinto.repaint();
             
             JOptionPane.showMessageDialog(null, "Se generara un laberinto con " + numeroFilas + " filas y " + numeroColumnas + " columnas.");
         } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(null, "Los datos ingresados deben ser numeros.", "ERROR DE DATOS", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null, "Las filas y columnas ingresados deben ser numeros enteros positivos.", "ERROR DE DATOS", JOptionPane.ERROR_MESSAGE);
         }
     }//GEN-LAST:event_btnConfirmarActionPerformed
 

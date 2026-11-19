@@ -93,6 +93,9 @@
               <Dimension value="[920, 540]"/>
             </Property>
           </Properties>
+          <AuxValues>
+            <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new PanelLaberinto(laberinto)"/>
+          </AuxValues>
 
           <Layout>
             <DimensionLayout dim="0">
