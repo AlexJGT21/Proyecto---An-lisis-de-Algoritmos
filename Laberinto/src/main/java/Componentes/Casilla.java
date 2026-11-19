@@ -9,16 +9,14 @@ package Componentes;
  * @author le0jx
  */
 public class Casilla {
-    private int x, y;
-    private int valor;
+    private int x, y, valor, rol;
     private boolean visitado;
-    private int rol;
-    private Casilla vecinoArriba;
-    private Casilla vecinoDerecha;
-    private Casilla vecinoIzquierda;
-    private Casilla vecinoAbajo;
+    private Casilla vecinoArriba, vecinoDerecha, vecinoIzquierda, vecinoAbajo;
+    private int costoVecinoArriba, costoVecinoDerecha, costoVecinoIzquierda, costoVecinoAbajo;
 
     public Casilla() {
+        this.valor = 0;
+        this.visitado = false;
     }
 
     public int getX() {
@@ -93,6 +91,44 @@ public class Casilla {
 
     public void setVecinoAbajo(Casilla vecinoAbajo) {
         this.vecinoAbajo = vecinoAbajo;
+    }
+
+    public int getCostoVecinoArriba() {
+        return costoVecinoArriba;
+    }
+
+    public void setCostoVecinoArriba(int costoVecinoArriba) {
+        this.costoVecinoArriba = costoVecinoArriba;
+    }
+
+    public int getCostoVecinoDerecha() {
+        return costoVecinoDerecha;
+    }
+
+    public void setCostoVecinoDerecha(int costoVecinoDerecha) {
+        this.costoVecinoDerecha = costoVecinoDerecha;
+    }
+
+    public int getCostoVecinoIzquierda() {
+        return costoVecinoIzquierda;
+    }
+
+    public void setCostoVecinoIzquierda(int costoVecinoIzquierda) {
+        this.costoVecinoIzquierda = costoVecinoIzquierda;
+    }
+
+    public int getCostoVecinoAbajo() {
+        return costoVecinoAbajo;
+    }
+
+    public void setCostoVecinoAbajo(int costoVecinoAbajo) {
+        this.costoVecinoAbajo = costoVecinoAbajo;
+    }
+
+    @Override
+    public String toString() {
+        return "Casilla{" + "x=" + x + ", y=" + y + ", valor=" + valor + ", rol=" + rol + ", visitado=" + visitado + 
+                ", costoVecinoArriba=" + costoVecinoArriba + ", costoVecinoDerecha=" + costoVecinoDerecha + ", costoVecinoIzquierda=" + costoVecinoIzquierda + ", costoVecinoAbajo=" + costoVecinoAbajo + '}';
     }
     
 }

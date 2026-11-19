@@ -24,8 +24,8 @@ public class Laberinto {
      * Constrictor que crea un laberinto por defecto
      */
     public Laberinto(){
-        this.filas = 13;
-        this.columnas = 23;
+        this.filas = 5;
+        this.columnas = 5;
         
         matriz = setearLaberinto();
     }
@@ -93,53 +93,40 @@ public class Laberinto {
         
         for (int fila = 0; fila < filas; fila++) {
             for (int columna = 0; columna < columnas; columna++) {
-                //pasillo
+                //camino
                 if (laberinto[fila][columna].getRol() == 0) {
                     grafico.setColor(Color.WHITE);
                     grafico.fillRect(columna * anchoBloque, fila * altoBloque, anchoBloque, altoBloque);
                     
                     grafico.setColor(Color.WHITE);
                     grafico.drawRect(columna * anchoBloque, fila * altoBloque, anchoBloque, altoBloque);  
-                    laberinto[fila][columna].setX(columna);
-                    laberinto[fila][columna].setY(fila);
                 }
                 
-                //color paredes
+                //muro
                 if (laberinto[fila][columna].getRol() == 1) {
                     grafico.setColor(Color.BLACK);
                     grafico.fillRect(columna * anchoBloque, fila * altoBloque, anchoBloque, altoBloque);
                     
                     grafico.setColor(Color.black);
                     grafico.drawRect(columna * anchoBloque, fila * altoBloque, anchoBloque, altoBloque); 
-//                    laberinto[fila][columna] = null;
                 }
                 
-                //color entrada
+                //entrada
                 if (laberinto[fila][columna].getRol() == 2) {
                     grafico.setColor(Color.CYAN);
                     grafico.fillRect(columna * anchoBloque, fila * altoBloque, anchoBloque, altoBloque);
                     
                     grafico.setColor(Color.CYAN);
                     grafico.drawRect(columna * anchoBloque, fila * altoBloque, anchoBloque, altoBloque); 
-                    
-                    laberinto[fila][columna].setX(columna);
-                    laberinto[fila][columna].setY(fila);
-                    
-                    CInicio = laberinto[fila][columna];
                 }
                 
-                //color salida
+                //salida
                 if (laberinto[fila][columna].getRol() == 3) {
                     grafico.setColor(Color.CYAN);
                     grafico.fillRect(columna * anchoBloque, fila * altoBloque, anchoBloque, altoBloque);
                     
                     grafico.setColor(Color.CYAN);
                     grafico.drawRect(columna * anchoBloque, fila * altoBloque, anchoBloque, altoBloque);    
-                    
-                    laberinto[fila][columna].setX(columna);
-                    laberinto[fila][columna].setY(fila);
-                    
-                    CFinal = laberinto[fila][columna];
                 }
             }            
         }
@@ -158,58 +145,83 @@ public class Laberinto {
         for (int i = 0; i < laberinto.length; i++) {
             for (int j = 0; j < laberinto[i].length; j++) {
                 laberinto[i][j] = new Casilla();
+                
                 laberinto[i][j].setRol(random.nextInt(2));
+                laberinto[i][j].setX(j);
+                laberinto[i][j].setY(i);
             }
         }
         
-        laberinto = entradaSalida(laberinto);
-        /*
-        int[][] laberinto = {
-                {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-                {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
-                {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
-                {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
-                {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
-                {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
-                {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
-                {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
-                {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
-                {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
-                {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
-                {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-                {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}
-        };
+        laberinto = SeteoEntradaSalida(laberinto);
+        laberinto = seteoVecinos(laberinto);
         
-        //Laberinto de prueba
-        /*
-        int[][] laberinto = {
-                {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-                {1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1},
-                {1, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 1},
-                {1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1},
-                {1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1},
-                {1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-                {1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1},
-                {1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1},
-                {1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 0, 1},
-                {1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1},
-                {1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1},
-                {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-                {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}
-        };
-        */
+        //solo para confirmar correcto seteo de aristas/vecinos
+        imprimirLaberinto(laberinto);
         return laberinto;
     }
     
-    private Casilla[][] entradaSalida(Casilla[][] laberinto){
+    private Casilla[][] SeteoEntradaSalida(Casilla[][] laberinto){
         int entrada = random.nextInt(filas);
         int salida= random.nextInt(filas);
         laberinto[entrada][0] = new Casilla();
-        laberinto[salida][columnas-1] = new Casilla();
+        laberinto[salida][columnas - 1] = new Casilla();
+        
         laberinto[entrada][0].setRol(2);
         laberinto[salida][columnas-1].setRol(3);
         
+        laberinto[entrada][0].setX(0);
+        laberinto[entrada][0].setY(entrada);
+        CInicio = laberinto[entrada][0];
+        
+        laberinto[salida][columnas-1].setX(columnas-1);
+        laberinto[salida][columnas-1].setY(salida);
+        CFinal = laberinto[salida][columnas-1];        
         return laberinto;
+    }
+    
+    private Casilla[][] seteoVecinos(Casilla[][] laberinto){
+        //de arriba a abajo
+        for (int i = 1; i < laberinto.length; i++) {
+            for (int j = 0; j < laberinto[i].length; j++) {
+                if(laberinto[i][j].getRol() != 1){
+                    if( laberinto[i-1][j].getRol() != 1){
+                        int costoArista = (random.nextInt(100))+1;
+                        laberinto[i][j].setVecinoArriba(laberinto[i-1][j]);
+                        laberinto[i][j].setCostoVecinoArriba(costoArista);
+                        laberinto[i-1][j].setVecinoAbajo(laberinto[i][j]);
+                        laberinto[i-1][j].setCostoVecinoAbajo(costoArista);
+                    }
+                }
+            }
+        }
+        
+        //de izquierda a derecha
+        for (int i = 0; i < laberinto.length; i++) {
+            for (int j = 1; j < laberinto[i].length; j++) {
+                if(laberinto[i][j].getRol() != 1){
+                    if( laberinto[i][j-1].getRol() != 1){
+                        int costoArista = (random.nextInt(100))+1;
+                        laberinto[i][j].setVecinoIzquierda(laberinto[i][j-1]);
+                        laberinto[i][j].setCostoVecinoIzquierda(costoArista);
+                        laberinto[i][j-1].setVecinoDerecha(laberinto[i][j]);
+                        laberinto[i][j-1].setCostoVecinoDerecha(costoArista);
+                    }
+                }
+            }
+        }
+        
+        return laberinto;
+    }
+    
+    //solo para confirmar correcto seteo de aristas/vecinos
+    private void imprimirLaberinto(Casilla[][] laberinto){
+        System.out.println("-----------------------------------------------------");
+        for (int i = 0; i < laberinto.length; i++) {
+            for (int j = 0; j < laberinto[i].length; j++) {
+                System.out.println(laberinto[i][j].toString());
+            }
+        }
+        System.out.println("-----------------------------------------------------");
     }
     
 }
