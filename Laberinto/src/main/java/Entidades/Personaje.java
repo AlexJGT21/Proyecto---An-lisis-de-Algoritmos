@@ -1,12 +1,12 @@
 
-package Componentes;
+package Entidades;
 
 import java.awt.Color;
 import java.awt.Graphics;
 
 /**
  *
- * @author Ale JGT
+ * @author AleX JGT
  */
 public class Personaje {
     
@@ -65,7 +65,6 @@ public class Personaje {
 //    private final int movimiento = 40;
     
     public void paint(Graphics grafico) {
-        
         grafico.setColor(Color.red);
         grafico.fillOval(x, y, ancho, alto);
         
@@ -74,3 +73,4 @@ public class Personaje {
     }
     
 }
+

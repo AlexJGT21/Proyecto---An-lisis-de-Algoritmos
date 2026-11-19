@@ -6,7 +6,7 @@ import Componentes.Juego;
 
 /**
  *
- * @author Ale JGT
+ * @author AleX JGT
  */
 public class LaberintoDeGrafos {
 

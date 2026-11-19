@@ -1,12 +1,13 @@
 
 package Componentes;
 
+import Entidades.Personaje;
 import java.awt.Graphics;
 import javax.swing.JPanel;
 
 /**
  *
- * @author Ale JGT 
+ * @author Alex JGT 
  */
 public class PanelLaberinto extends JPanel {
     

@@ -1,13 +1,14 @@
 
 package Componentes;
 
+import Entidades.Casilla;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.util.Random;
 
 /**
  *
- * @author Ale JGT
+ * @author AleX JGT
  */
 public class Laberinto {
     
@@ -21,7 +22,7 @@ public class Laberinto {
     private Random random = new Random();
     
     /**
-     * Constrictor que crea un laberinto por defecto
+     * Constructor que crea un laberinto por defecto
      */
     public Laberinto(){
         this.filas = 5;
@@ -76,10 +77,6 @@ public class Laberinto {
     public void setCFinal(Casilla CFinal) {
         this.CFinal = CFinal;
     }
-    
-    
-    
-    
     
     public void paint(Graphics grafico, int anchoPalen, int altoPanel) {
         Casilla[][] laberinto = matriz;

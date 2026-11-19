@@ -1,14 +1,12 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
-package Componentes;
+
+package Entidades;
 
 /**
  *
  * @author le0jx
  */
 public class Casilla {
+    
     private int x, y, valor, rol;
     private boolean visitado;
     private Casilla vecinoArriba, vecinoDerecha, vecinoIzquierda, vecinoAbajo;
@@ -132,3 +130,4 @@ public class Casilla {
     }
     
 }
+

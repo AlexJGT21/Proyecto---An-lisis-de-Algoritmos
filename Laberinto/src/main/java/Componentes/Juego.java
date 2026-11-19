@@ -8,13 +8,17 @@ import javax.swing.JOptionPane;
 
 /**
  *
- * @author Ale JGT
+ * @author AleX JGT
  */
 public class Juego extends javax.swing.JFrame {
 
-    Laberinto laberinto = new Laberinto();
+    private Laberinto laberinto;    
+    private RecorridoBFS  bfs;
     
     public Juego() {
+        laberinto = new Laberinto();
+        bfs = new RecorridoBFS(laberinto);
+        
         initComponents();
         
         setLocationRelativeTo(null);
@@ -164,6 +168,14 @@ public class Juego extends javax.swing.JFrame {
             laberinto.setDimensiones(numeroFilas, numeroColumnas);
             jLaberinto.repaint();
             
+            boolean resultado = bfs.existeCaminoBFS();
+            
+            if (resultado) {
+                JOptionPane.showMessageDialog(null, "Existe un camino.");
+            } else {
+                JOptionPane.showMessageDialog(null, "No existe camino posible.");
+            }
+                        
             JOptionPane.showMessageDialog(null, "Se generara un laberinto con " + numeroFilas + " filas y " + numeroColumnas + " columnas.");
         } catch (NumberFormatException e) {
             JOptionPane.showMessageDialog(null, "Las filas y columnas ingresados deben ser numeros enteros positivos.", "ERROR DE DATOS", JOptionPane.ERROR_MESSAGE);
