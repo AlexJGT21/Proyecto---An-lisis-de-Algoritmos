@@ -153,7 +153,7 @@ public class Laberinto {
         laberinto = seteoVecinos(laberinto);
         
         //solo para confirmar correcto seteo de aristas/vecinos
-        imprimirLaberinto(laberinto);
+//        imprimirLaberinto(laberinto);
         return laberinto;
     }
     

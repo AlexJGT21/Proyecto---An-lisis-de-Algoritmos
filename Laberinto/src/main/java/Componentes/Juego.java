@@ -28,6 +28,49 @@ public class Juego extends javax.swing.JFrame {
         setTitle("LABERINTO DE GRAFO");
     }
     
+    private void crearLaberinto(){
+        String filas = jTFilas.getText();
+        String columnas = jTColumnas.getText();
+        try {
+            int numeroFilas = Integer.parseInt(filas);
+            int numeroColumnas = Integer.parseInt(columnas);
+            if (numeroFilas <= 0 || numeroColumnas <= 0) {
+                JOptionPane.showMessageDialog(null, "Las filas y columnas ingresados deben ser numeros enteros positivos.", "ERROR DE DATOS", JOptionPane.ERROR_MESSAGE);
+                throw new IllegalArgumentException("numeros negativos");
+            }
+            //Pasamos los datos de filas y columnas ingresadas por el usuario
+            laberinto.setDimensiones(numeroFilas, numeroColumnas);
+            jLaberinto.repaint();
+
+            boolean completable = bfs.existeCaminoBFS();
+
+            
+            if (completable == false) {
+                btnResolver.setEnabled(false);
+                if(completableCheckBox.isSelected()){
+                crearLaberinto();
+                }else{
+//                    JOptionPane.showMessageDialog(null, "No existe camino posible.");
+                    int respuesta = JOptionPane.showConfirmDialog(
+                            null,
+                            "¿Deseas crear un nuevo laberinto?",
+                            "No existe camino posible.",
+                            JOptionPane.YES_NO_OPTION
+                    );
+                    if(respuesta == JOptionPane.YES_OPTION){
+                        crearLaberinto();
+                    }
+                }
+            }else{
+                btnResolver.setEnabled(true);
+                JOptionPane.showMessageDialog(null, "Laberinto completable creado.");
+            }
+
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(null, "Las filas y columnas ingresados deben ser numeros enteros positivos.", "ERROR DE DATOS", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -46,6 +89,8 @@ public class Juego extends javax.swing.JFrame {
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         jTColumnas = new javax.swing.JTextField();
+        completableCheckBox = new javax.swing.JCheckBox();
+        btnResolver = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -100,11 +145,27 @@ public class Juego extends javax.swing.JFrame {
             }
         });
 
+        jTFilas.setText("5");
+
         jLabel1.setFont(new java.awt.Font("Times New Roman", 0, 18)); // NOI18N
         jLabel1.setText("Filas");
 
         jLabel2.setFont(new java.awt.Font("Times New Roman", 0, 18)); // NOI18N
         jLabel2.setText("Columnas");
+
+        jTColumnas.setText("5");
+
+        completableCheckBox.setSelected(true);
+        completableCheckBox.setText("solo completable");
+
+        btnResolver.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        btnResolver.setText("resolver");
+        btnResolver.setEnabled(false);
+        btnResolver.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnResolverActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -117,7 +178,11 @@ public class Juego extends javax.swing.JFrame {
                     .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jTFilas)
                     .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jTColumnas))
+                    .addComponent(jTColumnas)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addComponent(completableCheckBox)
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addComponent(btnResolver, javax.swing.GroupLayout.DEFAULT_SIZE, 152, Short.MAX_VALUE))
                 .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
@@ -131,8 +196,12 @@ public class Juego extends javax.swing.JFrame {
                 .addComponent(jLabel2)
                 .addGap(18, 18, 18)
                 .addComponent(jTColumnas, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(45, 45, 45)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(completableCheckBox)
+                .addGap(13, 13, 13)
                 .addComponent(btnConfirmar, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(btnResolver, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -155,37 +224,19 @@ public class Juego extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnConfirmarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnConfirmarActionPerformed
-        String filas = jTFilas.getText();
-        String columnas = jTColumnas.getText();
-        try {
-            int numeroFilas = Integer.parseInt(filas);
-            int numeroColumnas = Integer.parseInt(columnas);
-            if(numeroFilas <= 0 || numeroColumnas <= 0){
-                JOptionPane.showMessageDialog(null, "Las filas y columnas ingresados deben ser numeros enteros positivos.", "ERROR DE DATOS", JOptionPane.ERROR_MESSAGE);
-             throw new IllegalArgumentException("numeros negativos");
-            }
-            //Pasamos los datos de filas y columnas ingresadas por el usuario
-            laberinto.setDimensiones(numeroFilas, numeroColumnas);
-            jLaberinto.repaint();
-            
-            boolean resultado = bfs.existeCaminoBFS();
-            
-            if (resultado) {
-                JOptionPane.showMessageDialog(null, "Existe un camino.");
-            } else {
-                JOptionPane.showMessageDialog(null, "No existe camino posible.");
-            }
-                        
-            JOptionPane.showMessageDialog(null, "Se generara un laberinto con " + numeroFilas + " filas y " + numeroColumnas + " columnas.");
-        } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(null, "Las filas y columnas ingresados deben ser numeros enteros positivos.", "ERROR DE DATOS", JOptionPane.ERROR_MESSAGE);
-        }
+        crearLaberinto();
     }//GEN-LAST:event_btnConfirmarActionPerformed
+
+    private void btnResolverActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnResolverActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_btnResolverActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel JFondo;
     private javax.swing.JButton btnConfirmar;
+    private javax.swing.JButton btnResolver;
+    private javax.swing.JCheckBox completableCheckBox;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
