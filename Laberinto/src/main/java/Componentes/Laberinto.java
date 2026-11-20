@@ -29,6 +29,7 @@ public class Laberinto {
     private Casilla[][] matriz;
     
     private Random random = new Random();
+    private int filaEntrada = -1; // -1 = entradas aleatorias
     
     /**
      * Constructor que crea un laberinto por defecto
@@ -50,6 +51,11 @@ public class Laberinto {
         this.columnas = columnas;
         
         matriz = setearLaberinto();
+    }
+    
+    public void setDimensiones(int filas, int columnas, int filaEntrada) {
+        this.filaEntrada = filaEntrada;
+        setDimensiones(filas, columnas);
     }
     
     public void setDimensiones(int filas, int columnas) {
@@ -205,6 +211,11 @@ public class Laberinto {
         inicioSeleccionado = null;
         caminoSolucion = new ArrayList<>();
         
+        if (filaEntrada >= 0 && filaEntrada < filas) {
+            Casilla elegida = laberinto[filaEntrada][0];
+            elegida.setRol(2);
+            entradas.add(elegida);
+        }
         marcarExtremo(laberinto, 0, 2, entradas);
         marcarExtremo(laberinto, columnas - 1, 3, salidas);
         
@@ -308,4 +319,3 @@ public class Laberinto {
     }
     
 }
-

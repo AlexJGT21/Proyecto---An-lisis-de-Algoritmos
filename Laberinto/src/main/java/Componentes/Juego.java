@@ -4,12 +4,14 @@ import Entidades.Casilla;
 import java.awt.Dimension;
 import java.util.List;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import javax.swing.JTextField;
 
 /**
  *
@@ -22,6 +24,7 @@ public class Juego extends javax.swing.JFrame {
     private RecorridoTopologico topologico;
     private RecorridoEstrella estrella;
     private boolean generado = false;
+    private JTextField campoFilaEntrada;
 
     public Juego() {
         laberinto = new Laberinto();
@@ -45,6 +48,16 @@ public class Juego extends javax.swing.JFrame {
                 throw new IllegalArgumentException(
                         "Ingresa entre 1 y 40 filas y entre 2 y 70 columnas.");
             }
+            
+            int filaEntrada = -1; // -1 = entradas aleatorias
+            String textoEntrada = campoFilaEntrada.getText().trim();
+            if (!textoEntrada.isEmpty()) {
+                filaEntrada = Integer.parseInt(textoEntrada) - 1;
+                if (filaEntrada < 0 || filaEntrada >= filas) {
+                    throw new IllegalArgumentException(
+                            "La fila de entrada debe estar entre 1 y " + filas + ".");
+                }
+            }
 
             estrella = null;
             generado = false;
@@ -52,7 +65,7 @@ public class Juego extends javax.swing.JFrame {
             boolean completable;
             int intentos = 0;
             do {
-                laberinto.setDimensiones(filas, columnas);
+                laberinto.setDimensiones(filas, columnas, filaEntrada);
                 completable = bfs.existeCaminoBFS();
                 intentos++;
             } while (completableCheckBox.isSelected() && !completable && intentos < 200);
@@ -102,6 +115,11 @@ public class Juego extends javax.swing.JFrame {
         menu.add(opcionEstrella);
 
         barra.add(menu);
+        barra.add(javax.swing.Box.createHorizontalStrut(20));
+        barra.add(new JLabel("Fila de entrada (opcional): "));
+        campoFilaEntrada = new javax.swing.JTextField(3);
+        campoFilaEntrada.setMaximumSize(new Dimension(50, 24));
+        barra.add(campoFilaEntrada);
         setJMenuBar(barra);
     }
 
@@ -182,7 +200,6 @@ public class Juego extends javax.swing.JFrame {
     private String posicion(Casilla c) {
         return "(" + (c.getY() + 1) + "," + (c.getX() + 1) + ")";
     }
-    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
