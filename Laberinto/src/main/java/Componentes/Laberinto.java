@@ -1,10 +1,14 @@
-
 package Componentes;
 
 import Entidades.Casilla;
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Random;
+import java.util.Set;
 
 /**
  *
@@ -16,6 +20,11 @@ public class Laberinto {
     private int columnas;
     private Casilla CInicio;
     private Casilla CFinal;
+
+    private final List<Casilla> entradas = new ArrayList<>();
+    private final List<Casilla> salidas = new ArrayList<>();
+    private Casilla inicioSeleccionado;
+    private List<Casilla> caminoSolucion = new ArrayList<>();
     
     private Casilla[][] matriz;
     
@@ -78,6 +87,31 @@ public class Laberinto {
         this.CFinal = CFinal;
     }
     
+    public List<Casilla> getEntradas() {
+        return entradas;
+    }
+
+    public List<Casilla> getSalidas() {
+        return salidas;
+    }
+
+    public Casilla getInicioSeleccionado() {
+        return inicioSeleccionado;
+    }
+
+    public void setInicioSeleccionado(Casilla inicioSeleccionado) {
+        this.inicioSeleccionado = inicioSeleccionado;
+    }
+
+    public List<Casilla> getCaminoSolucion() {
+        return caminoSolucion;
+    }
+
+    public void setCaminoSolucion(List<Casilla> caminoSolucion) {
+        this.caminoSolucion = (caminoSolucion == null)
+                ? new ArrayList<>() : new ArrayList<>(caminoSolucion);
+    }
+
     public void paint(Graphics grafico, int anchoPalen, int altoPanel) {
         Casilla[][] laberinto = matriz;
         
@@ -87,45 +121,49 @@ public class Laberinto {
         
         int anchoBloque = anchoPalen / columnas;
         int altoBloque = altoPanel / filas;
+        Set<Casilla> enCamino = new HashSet<>(caminoSolucion);
         
         for (int fila = 0; fila < filas; fila++) {
             for (int columna = 0; columna < columnas; columna++) {
-                //camino
-                if (laberinto[fila][columna].getRol() == 0) {
-                    grafico.setColor(Color.WHITE);
-                    grafico.fillRect(columna * anchoBloque, fila * altoBloque, anchoBloque, altoBloque);
-                    
-                    grafico.setColor(Color.WHITE);
-                    grafico.drawRect(columna * anchoBloque, fila * altoBloque, anchoBloque, altoBloque);  
-                }
+                Casilla casilla = laberinto[fila][columna];
+                int x = columna * anchoBloque;
+                int y = fila * altoBloque;
                 
-                //muro
-                if (laberinto[fila][columna].getRol() == 1) {
-                    grafico.setColor(Color.BLACK);
-                    grafico.fillRect(columna * anchoBloque, fila * altoBloque, anchoBloque, altoBloque);
-                    
-                    grafico.setColor(Color.black);
-                    grafico.drawRect(columna * anchoBloque, fila * altoBloque, anchoBloque, altoBloque); 
+                switch (casilla.getRol()) {
+                    case 1 -> grafico.setColor(Color.BLACK);          // muro
+                    case 2 -> grafico.setColor(Color.CYAN);           // entrada
+                    case 3 -> grafico.setColor(Color.ORANGE);         // salida
+                    default -> grafico.setColor(Color.WHITE);         // camino
                 }
+                // El camino más corto se resalta en verde (entrada/salida conservan su color).
+                if (enCamino.contains(casilla) && casilla.getRol() == 0) {
+                    grafico.setColor(Color.GREEN);
+                }
+                grafico.fillRect(x, y, anchoBloque, altoBloque);
                 
-                //entrada
-                if (laberinto[fila][columna].getRol() == 2) {
-                    grafico.setColor(Color.CYAN);
-                    grafico.fillRect(columna * anchoBloque, fila * altoBloque, anchoBloque, altoBloque);
-                    
-                    grafico.setColor(Color.CYAN);
-                    grafico.drawRect(columna * anchoBloque, fila * altoBloque, anchoBloque, altoBloque); 
-                }
+                grafico.setColor(Color.LIGHT_GRAY);
+                grafico.drawRect(x, y, anchoBloque, altoBloque);
                 
-                //salida
-                if (laberinto[fila][columna].getRol() == 3) {
-                    grafico.setColor(Color.CYAN);
-                    grafico.fillRect(columna * anchoBloque, fila * altoBloque, anchoBloque, altoBloque);
-                    
-                    grafico.setColor(Color.CYAN);
-                    grafico.drawRect(columna * anchoBloque, fila * altoBloque, anchoBloque, altoBloque);    
+                if (casilla == inicioSeleccionado) {
+                    grafico.setColor(Color.BLUE);
+                    grafico.drawRect(x + 1, y + 1, anchoBloque - 2, altoBloque - 2);
                 }
-            }            
+            }
+        }
+        
+        // Aristas del camino más corto: línea verde entre centros de casillas consecutivas.
+        if (caminoSolucion.size() > 1) {
+            java.awt.Graphics2D g2 = (java.awt.Graphics2D) grafico;
+            java.awt.Stroke anterior = g2.getStroke();
+            g2.setColor(new Color(0, 150, 0));
+            g2.setStroke(new java.awt.BasicStroke(Math.max(2, Math.min(anchoBloque, altoBloque) / 4)));
+            for (int i = 0; i < caminoSolucion.size() - 1; i++) {
+                Casilla a = caminoSolucion.get(i);
+                Casilla b = caminoSolucion.get(i + 1);
+                g2.drawLine(a.getX() * anchoBloque + anchoBloque / 2, a.getY() * altoBloque + altoBloque / 2,
+                        b.getX() * anchoBloque + anchoBloque / 2, b.getY() * altoBloque + altoBloque / 2);
+            }
+            g2.setStroke(anterior);
         }
     }
     
@@ -157,23 +195,71 @@ public class Laberinto {
         return laberinto;
     }
     
+    /**
+     * Crea al menos una entrada en la primera columna y al menos una salida
+     * en la última columna (se eligen varias al azar).
+     */
     private Casilla[][] SeteoEntradaSalida(Casilla[][] laberinto){
-        int entrada = random.nextInt(filas);
-        int salida= random.nextInt(filas);
-        laberinto[entrada][0] = new Casilla();
-        laberinto[salida][columnas - 1] = new Casilla();
+        entradas.clear();
+        salidas.clear();
+        inicioSeleccionado = null;
+        caminoSolucion = new ArrayList<>();
         
-        laberinto[entrada][0].setRol(2);
-        laberinto[salida][columnas-1].setRol(3);
+        marcarExtremo(laberinto, 0, 2, entradas);
+        marcarExtremo(laberinto, columnas - 1, 3, salidas);
         
-        laberinto[entrada][0].setX(0);
-        laberinto[entrada][0].setY(entrada);
-        CInicio = laberinto[entrada][0];
-        
-        laberinto[salida][columnas-1].setX(columnas-1);
-        laberinto[salida][columnas-1].setY(salida);
-        CFinal = laberinto[salida][columnas-1];        
+        CInicio = entradas.get(0);
+        CFinal = salidas.get(0);
         return laberinto;
+    }
+    
+    private void marcarExtremo(Casilla[][] laberinto, int columna, int rol, List<Casilla> destino) {
+        int cantidad = 1 + random.nextInt(Math.max(1, Math.min(3, filas)));
+        while (destino.size() < cantidad) {
+            Casilla c = laberinto[random.nextInt(filas)][columna];
+            if (c.getRol() != rol) {
+                c.setRol(rol);
+                destino.add(c);
+            }
+        }
+        destino.sort((a, b) -> Integer.compare(a.getY(), b.getY()));
+    }
+    
+    /**
+     * Abre un pasillo desde la primera entrada hasta la primera salida
+     * y regenera las aristas, para garantizar que el laberinto tenga solución.
+     */
+    public void garantizarCamino() {
+        Casilla entrada = entradas.get(0);
+        Casilla salida = salidas.get(0);
+        int fila = entrada.getY();
+        int columna = entrada.getX();
+        
+        // Avanza a la derecha hasta la última columna y luego en vertical hasta la salida.
+        while (columna < columnas - 1) {
+            columna++;
+            abrir(matriz[fila][columna]);
+        }
+        while (fila != salida.getY()) {
+            fila += (salida.getY() > fila) ? 1 : -1;
+            abrir(matriz[fila][columna]);
+        }
+        
+        for (Casilla[] f : matriz) {
+            for (Casilla c : f) {
+                c.setVecinoArriba(null);
+                c.setVecinoAbajo(null);
+                c.setVecinoDerecha(null);
+                c.setVecinoIzquierda(null);
+            }
+        }
+        seteoVecinos(matriz);
+    }
+    
+    private void abrir(Casilla c) {
+        if (c.getRol() == 1) {
+            c.setRol(0);
+        }
     }
     
     private Casilla[][] seteoVecinos(Casilla[][] laberinto){
@@ -222,3 +308,4 @@ public class Laberinto {
     }
     
 }
+

@@ -1,10 +1,15 @@
-
 package Componentes;
 
-import java.awt.Color;
-import java.awt.Graphics;
+import Entidades.Casilla;
+import java.awt.Dimension;
+import java.util.List;
 import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 
 /**
  *
@@ -12,63 +17,170 @@ import javax.swing.JOptionPane;
  */
 public class Juego extends javax.swing.JFrame {
 
-    private Laberinto laberinto;    
-    private RecorridoBFS  bfs;
-    
+    private Laberinto laberinto;
+    private RecorridoBFS bfs;
+    private RecorridoTopologico topologico;
+    private RecorridoEstrella estrella;
+    private boolean generado = false;
+
     public Juego() {
         laberinto = new Laberinto();
         bfs = new RecorridoBFS(laberinto);
-        
+
         initComponents();
-        
+        configurarMenu();
+
         setLocationRelativeTo(null);
         setResizable(false);
-        
+
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setTitle("LABERINTO DE GRAFO");
     }
-    
-    private void crearLaberinto(){
-        String filas = jTFilas.getText();
-        String columnas = jTColumnas.getText();
+
+    private void crearLaberinto() {
         try {
-            int numeroFilas = Integer.parseInt(filas);
-            int numeroColumnas = Integer.parseInt(columnas);
-            if (numeroFilas <= 0 || numeroColumnas <= 0) {
-                JOptionPane.showMessageDialog(null, "Las filas y columnas ingresados deben ser numeros enteros positivos.", "ERROR DE DATOS", JOptionPane.ERROR_MESSAGE);
-                throw new IllegalArgumentException("numeros negativos");
+            int filas = Integer.parseInt(jTFilas.getText().trim());
+            int columnas = Integer.parseInt(jTColumnas.getText().trim());
+            if (filas < 1 || columnas < 2 || filas > 40 || columnas > 70) {
+                throw new IllegalArgumentException(
+                        "Ingresa entre 1 y 40 filas y entre 2 y 70 columnas.");
             }
-            //Pasamos los datos de filas y columnas ingresadas por el usuario
-            laberinto.setDimensiones(numeroFilas, numeroColumnas);
+
+            estrella = null;
+            generado = false;
+            btnResolver.setEnabled(false);
+            boolean completable;
+            int intentos = 0;
+            do {
+                laberinto.setDimensiones(filas, columnas);
+                completable = bfs.existeCaminoBFS();
+                intentos++;
+            } while (completableCheckBox.isSelected() && !completable && intentos < 200);
+
+            // Evita recursividad y asegura el camino si 200 intentos no bastaron.
+            if (completableCheckBox.isSelected() && !completable) {
+                laberinto.garantizarCamino();
+                completable = bfs.existeCaminoBFS();
+            }
+
+            generado = true;
+            btnResolver.setEnabled(completable);
             jLaberinto.repaint();
-
-            boolean completable = bfs.existeCaminoBFS();
-
-            
-            if (completable == false) {
-                btnResolver.setEnabled(false);
-                if(completableCheckBox.isSelected()){
-                crearLaberinto();
-                }else{
-//                    JOptionPane.showMessageDialog(null, "No existe camino posible.");
-                    int respuesta = JOptionPane.showConfirmDialog(
-                            null,
-                            "¿Deseas crear un nuevo laberinto?",
-                            "No existe camino posible.",
-                            JOptionPane.YES_NO_OPTION
-                    );
-                    if(respuesta == JOptionPane.YES_OPTION){
-                        crearLaberinto();
-                    }
-                }
-            }else{
-                btnResolver.setEnabled(true);
-                JOptionPane.showMessageDialog(null, "Laberinto completable creado.");
+            if (completable) {
+                JOptionPane.showMessageDialog(this,
+                        "Laberinto creado con " + laberinto.getEntradas().size()
+                        + " entradas y " + laberinto.getSalidas().size() + " salidas.");
+            } else {
+                JOptionPane.showMessageDialog(this,
+                        "No existe camino entre ninguna entrada y salida.",
+                        "Laberinto sin solución", JOptionPane.INFORMATION_MESSAGE);
             }
-
         } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(null, "Las filas y columnas ingresados deben ser numeros enteros positivos.", "ERROR DE DATOS", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this,
+                    "Ingresa números enteros válidos para las dimensiones.",
+                    "Datos inválidos", JOptionPane.ERROR_MESSAGE);
+        } catch (IllegalArgumentException e) {
+            JOptionPane.showMessageDialog(this, e.getMessage(),
+                    "Datos inválidos", JOptionPane.ERROR_MESSAGE);
         }
+    }
+
+    private void configurarMenu() {
+        JMenuBar barra = new JMenuBar();
+        JMenu menu = new JMenu("Algoritmos");
+
+        JMenuItem opcionBFS = new JMenuItem("Ver recorrido BFS");
+        opcionBFS.addActionListener(e -> mostrarRecorridoBFS());
+        menu.add(opcionBFS);
+
+        JMenuItem opcionTopologico = new JMenuItem("Ver orden topológico (DAG)");
+        opcionTopologico.addActionListener(e -> mostrarOrdenTopologico());
+        menu.add(opcionTopologico);
+
+        JMenuItem opcionEstrella = new JMenuItem("Ver pasos de A*");
+        opcionEstrella.addActionListener(e -> mostrarPasosEstrella());
+        menu.add(opcionEstrella);
+
+        barra.add(menu);
+        setJMenuBar(barra);
+    }
+
+    private void mostrarRecorridoBFS() {
+        if (!generado) {
+            JOptionPane.showMessageDialog(this, "Primero genera un laberinto.");
+            return;
+        }
+
+        boolean hayCamino = bfs.existeCaminoBFS();
+        String texto = "BFS\n¿Existe un camino? " + (hayCamino ? "Sí" : "No") + "\n\n";
+
+        texto += "Orden de visita:\n";
+        for (Casilla c : bfs.getOrdenVisitados()) {
+            texto += posicion(c) + " ";
+        }
+        texto += "\n\nPasos:\n";
+        for (String paso : bfs.getPasos()) {
+            texto += paso + "\n";
+        }
+
+        mostrarTexto("Recorrido BFS", texto);
+    }
+
+    private void mostrarOrdenTopologico() {
+        if (!generado) {
+            JOptionPane.showMessageDialog(this, "Primero genera un laberinto.");
+            return;
+        }
+
+        topologico = new RecorridoTopologico(laberinto);
+        boolean valido = topologico.ordenar();
+        String texto = "Orden topológico (grafo dirigido: derecha y abajo)\n";
+        texto += "¿Es válido? " + (valido ? "Sí" : "No") + "\n\n";
+
+        texto += "Orden de visita:\n";
+        for (Casilla c : topologico.getOrdenVisitados()) {
+            texto += posicion(c) + " ";
+        }
+        texto += "\n\nPasos:\n";
+        for (String paso : topologico.getPasos()) {
+            texto += paso + "\n";
+        }
+
+        mostrarTexto("Recorrido topológico", texto);
+    }
+
+    private void mostrarPasosEstrella() {
+        if (estrella == null) {
+            JOptionPane.showMessageDialog(this,
+                    "Primero presiona Resolver para ejecutar A*.");
+            return;
+        }
+
+        String texto = "A*\nCosto total: " + estrella.getCostoTotal() + "\n\n";
+        texto += "Orden de visita:\n";
+        for (Casilla c : estrella.getOrdenVisitados()) {
+            texto += posicion(c) + " ";
+        }
+        texto += "\n\nPasos:\n";
+        for (String paso : estrella.getPasos()) {
+            texto += paso + "\n";
+        }
+
+        mostrarTexto("Recorrido A*", texto);
+    }
+
+    private void mostrarTexto(String titulo, String texto) {
+        JTextArea area = new JTextArea(texto);
+        area.setEditable(false);
+        area.setCaretPosition(0);
+        JScrollPane scroll = new JScrollPane(area);
+        scroll.setPreferredSize(new Dimension(650, 400));
+        JOptionPane.showMessageDialog(this, scroll, titulo,
+                JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    private String posicion(Casilla c) {
+        return "(" + (c.getY() + 1) + "," + (c.getX() + 1) + ")";
     }
     
     /**
@@ -228,7 +340,44 @@ public class Juego extends javax.swing.JFrame {
     }//GEN-LAST:event_btnConfirmarActionPerformed
 
     private void btnResolverActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnResolverActionPerformed
-        // TODO add your handling code here:
+        List<Casilla> entradas = laberinto.getEntradas();
+        String[] opciones = new String[entradas.size()];
+
+        for (int i = 0; i < entradas.size(); i++) {
+            opciones[i] = "Entrada " + (i + 1) + " " + posicion(entradas.get(i));
+        }
+
+        String seleccion = (String) JOptionPane.showInputDialog(this,
+                "Selecciona la entrada:", "A*", JOptionPane.QUESTION_MESSAGE,
+                null, opciones, opciones[0]);
+
+        if (seleccion == null) {
+            return;
+        }
+
+        Casilla inicio = null;
+        for (int i = 0; i < opciones.length; i++) {
+            if (opciones[i].equals(seleccion)) {
+                inicio = entradas.get(i);
+            }
+        }
+
+        laberinto.setInicioSeleccionado(inicio);
+        estrella = new RecorridoEstrella(laberinto);
+        boolean encontrado = estrella.resolver(inicio);
+        laberinto.setCaminoSolucion(estrella.getCamino());
+        jLaberinto.repaint();
+
+        if (encontrado) {
+            JOptionPane.showMessageDialog(this,
+                    "Camino encontrado con A*.\nCosto total: "
+                    + estrella.getCostoTotal() + "\nCasillas recorridas: "
+                    + estrella.getCamino().size());
+        } else {
+            JOptionPane.showMessageDialog(this,
+                    "No existe un camino desde la entrada seleccionada.");
+        }
+
     }//GEN-LAST:event_btnResolverActionPerformed
 
 
