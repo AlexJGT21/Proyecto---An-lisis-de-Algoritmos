@@ -3,7 +3,15 @@ package Componentes;
 import Entidades.Casilla;
 import java.awt.Dimension;
 import java.util.List;
-import javax.swing.*;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
 
 /**
  *
@@ -17,7 +25,6 @@ public class Juego extends javax.swing.JFrame {
     private RecorridoEstrella estrella;
     private boolean generado = false;
     private JTextField campoFilaEntrada;
-    private JComboBox<String> cmbAlgoritmo;
 
     public Juego() {
         laberinto = new Laberinto();
@@ -41,7 +48,7 @@ public class Juego extends javax.swing.JFrame {
                 throw new IllegalArgumentException(
                         "Ingresa entre 1 y 40 filas y entre 2 y 70 columnas.");
             }
-
+            
             int filaEntrada = -1; // -1 = entradas aleatorias
             String textoEntrada = campoFilaEntrada.getText().trim();
             if (!textoEntrada.isEmpty()) {
@@ -70,7 +77,7 @@ public class Juego extends javax.swing.JFrame {
             }
 
             generado = true;
-            btnResolver.setEnabled(generado);
+            btnResolver.setEnabled(completable);
             jLaberinto.repaint();
             if (completable) {
                 JOptionPane.showMessageDialog(this,
@@ -92,50 +99,29 @@ public class Juego extends javax.swing.JFrame {
     }
 
     private void configurarMenu() {
-
         JMenuBar barra = new JMenuBar();
-        JMenu menu = new JMenu("Configuración");
+        JMenu menu = new JMenu("Algoritmos");
 
-        JCheckBoxMenuItem opcionPesosNegativos
-                = new JCheckBoxMenuItem(
-                        "Ponderaciones de -100 a 100", false
-                );
+        JMenuItem opcionBFS = new JMenuItem("Ver recorrido BFS");
+        opcionBFS.addActionListener(e -> mostrarRecorridoBFS());
+        menu.add(opcionBFS);
 
-        opcionPesosNegativos.addActionListener(e -> {
-            laberinto.setPermitirPesosNegativos(
-                    opcionPesosNegativos.isSelected()
-            );
+        JMenuItem opcionTopologico = new JMenuItem("Ver orden topológico (DAG)");
+        opcionTopologico.addActionListener(e -> mostrarOrdenTopologico());
+        menu.add(opcionTopologico);
 
-            JOptionPane.showMessageDialog(this,
-                    "El rango de ponderaciones se aplicará "
-                    + "al generar otro laberinto.");
-        });
+        JMenuItem opcionEstrella = new JMenuItem("Ver pasos de A*");
+        opcionEstrella.addActionListener(e -> mostrarPasosEstrella());
+        menu.add(opcionEstrella);
 
-        menu.add(opcionPesosNegativos);
         barra.add(menu);
-
         barra.add(javax.swing.Box.createHorizontalStrut(20));
-
-        barra.add(new JLabel("Algoritmo: "));
-
-        cmbAlgoritmo = new JComboBox<>(
-                new String[]{"BFS", "Topológico", "A*"}
-        );
-
-        barra.add(cmbAlgoritmo);
-
-        barra.add(javax.swing.Box.createHorizontalStrut(20));
-
         barra.add(new JLabel("Fila de entrada (opcional): "));
-
-        campoFilaEntrada = new JTextField(3);
+        campoFilaEntrada = new javax.swing.JTextField(3);
         campoFilaEntrada.setMaximumSize(new Dimension(50, 24));
-
         barra.add(campoFilaEntrada);
-
         setJMenuBar(barra);
     }
-
 
     private void mostrarRecorridoBFS() {
         if (!generado) {
@@ -214,110 +200,6 @@ public class Juego extends javax.swing.JFrame {
     private String posicion(Casilla c) {
         return "(" + (c.getY() + 1) + "," + (c.getX() + 1) + ")";
     }
-
-    private void resolverBFS() {
-        if (!generado) {
-            JOptionPane.showMessageDialog(this,
-                    "Primero genera un laberinto.");
-            return;
-        }
-
-        estrella = null;
-        laberinto.setInicioSeleccionado(null);
-        laberinto.setCaminoSolucion(null);
-        jLaberinto.repaint();
-
-        mostrarRecorridoBFS();
-    }
-
-    private void resolverTopologico() {
-        if (!generado) {
-            JOptionPane.showMessageDialog(this,
-                    "Primero genera un laberinto.");
-            return;
-        }
-
-        estrella = null;
-        laberinto.setInicioSeleccionado(null);
-        laberinto.setCaminoSolucion(null);
-        jLaberinto.repaint();
-
-        mostrarOrdenTopologico();
-    }
-
-    private void resolverEstrella() {
-
-        if (!generado) {
-            JOptionPane.showMessageDialog(this,
-                    "Primero genera un laberinto.");
-            return;
-        }
-
-        List<Casilla> entradas = laberinto.getEntradas();
-        String[] opciones = new String[entradas.size()];
-
-        for (int i = 0; i < entradas.size(); i++) {
-            opciones[i] = "Entrada " + (i + 1)
-                    + " " + posicion(entradas.get(i));
-        }
-
-        String seleccion = (String) JOptionPane.showInputDialog(
-                this,
-                "Selecciona la entrada:",
-                "A*",
-                JOptionPane.QUESTION_MESSAGE,
-                null,
-                opciones,
-                opciones[0]
-        );
-
-        if (seleccion == null) {
-            return;
-        }
-
-        Casilla inicio = null;
-
-        for (int i = 0; i < opciones.length; i++) {
-            if (opciones[i].equals(seleccion)) {
-                inicio = entradas.get(i);
-                break;
-            }
-        }
-
-        laberinto.setInicioSeleccionado(inicio);
-        estrella = new RecorridoEstrella(laberinto);
-
-        try {
-            boolean encontrado = estrella.resolver(inicio);
-
-            laberinto.setCaminoSolucion(estrella.getCamino());
-            jLaberinto.repaint();
-
-            if (encontrado) {
-                JOptionPane.showMessageDialog(this,
-                        "Camino encontrado con A*.\n"
-                        + "Costo total: " + estrella.getCostoTotal()
-                        + "\nCasillas del camino: "
-                        + estrella.getCamino().size());
-            } else {
-                JOptionPane.showMessageDialog(this,
-                        "No existe un camino desde la entrada seleccionada.");
-            }
-
-            mostrarPasosEstrella();
-
-        } catch (IllegalArgumentException ex) {
-            estrella = null;
-            laberinto.setCaminoSolucion(null);
-            jLaberinto.repaint();
-
-            JOptionPane.showMessageDialog(this,
-                    ex.getMessage(),
-                    "A* no disponible",
-                    JOptionPane.WARNING_MESSAGE);
-        }
-    }
-
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -475,12 +357,42 @@ public class Juego extends javax.swing.JFrame {
     }//GEN-LAST:event_btnConfirmarActionPerformed
 
     private void btnResolverActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnResolverActionPerformed
-        String algoritmo = (String) cmbAlgoritmo.getSelectedItem();
+        List<Casilla> entradas = laberinto.getEntradas();
+        String[] opciones = new String[entradas.size()];
 
-        switch (algoritmo) {
-            case "BFS" -> resolverBFS();
-            case "Topológico" -> resolverTopologico();
-            case "A*" -> resolverEstrella();
+        for (int i = 0; i < entradas.size(); i++) {
+            opciones[i] = "Entrada " + (i + 1) + " " + posicion(entradas.get(i));
+        }
+
+        String seleccion = (String) JOptionPane.showInputDialog(this,
+                "Selecciona la entrada:", "A*", JOptionPane.QUESTION_MESSAGE,
+                null, opciones, opciones[0]);
+
+        if (seleccion == null) {
+            return;
+        }
+
+        Casilla inicio = null;
+        for (int i = 0; i < opciones.length; i++) {
+            if (opciones[i].equals(seleccion)) {
+                inicio = entradas.get(i);
+            }
+        }
+
+        laberinto.setInicioSeleccionado(inicio);
+        estrella = new RecorridoEstrella(laberinto);
+        boolean encontrado = estrella.resolver(inicio);
+        laberinto.setCaminoSolucion(estrella.getCamino());
+        jLaberinto.repaint();
+
+        if (encontrado) {
+            JOptionPane.showMessageDialog(this,
+                    "Camino encontrado con A*.\nCosto total: "
+                    + estrella.getCostoTotal() + "\nCasillas recorridas: "
+                    + estrella.getCamino().size());
+        } else {
+            JOptionPane.showMessageDialog(this,
+                    "No existe un camino desde la entrada seleccionada.");
         }
 
     }//GEN-LAST:event_btnResolverActionPerformed
